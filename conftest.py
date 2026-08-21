@@ -4,7 +4,7 @@ import string
 import pytest
 import requests
 
-from urls import BASE_URL, REGISTER_USER, LOGIN_USER
+from urls import BASE_URL, REGISTER_USER, LOGIN_USER, DELETE_USER
 
 
 def generate_email():
@@ -32,6 +32,13 @@ def created_user(user_data):
 
     yield user_data, response
 
+    access_token = response.json().get("accessToken")
+    if access_token:
+        requests.delete(
+            BASE_URL + DELETE_USER,
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+
 
 @pytest.fixture
 def auth_user(user_data):
@@ -55,3 +62,8 @@ def auth_user(user_data):
     access_token = login_response.json()["accessToken"]
 
     yield user_data, access_token
+
+    requests.delete(
+        BASE_URL + DELETE_USER,
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
